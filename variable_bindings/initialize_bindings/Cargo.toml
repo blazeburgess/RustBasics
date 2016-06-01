@@ -1,0 +1,6 @@
+[package]
+name = "initialize_bindings"
+version = "0.1.0"
+authors = ["thedailyephemera <thedailyephemera@gmail.com>"]
+
+[dependencies]
