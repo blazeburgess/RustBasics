@@ -9,8 +9,9 @@ fn main() {
     println!("Guess the number!");
 
     let secret_number = rand::thread_rng().gen_range(1, 101);
-
-    println!("The secret number is: {}", secret_number);
+    
+    // Uncomment for debugging:
+    // println!("The secret number is: {}", secret_number);
 
     loop { // inputing 'quit' command at prompt can break an infinite loop
         println!("Please input your guess.");
