@@ -120,3 +120,83 @@ fn main() {
 ///     }
 ///     ^
 /// hints at the issue being one of scope.
+///
+/// More explicitly, this is the problem of scope:
+fn main() {
+    let mut x = 5;
+    let y = &mut x;    // -+ &mut borrow of x starts here
+                       //  |
+    *y += 1            //  |
+                       //  |
+    println!("{}", x); // -+ - try to borrow x here
+}                      // -+ &mut borrow of x ends here
+
+/// Adding curly braces changes this considerably and creates no issues
+fn main() {
+    let mut x = 5;
+    {
+    let y = &mut x;    // -+ &mut borrow of x starts here 
+    *y += 1            //  |
+    }                  // -+ &mut borrow of x ends here
+
+    println!("{}", x); // <- try to borrow x here
+} 
+
+/// ## Issues borrowing prevents
+///
+/// ### Iterator invalidation
+fn main() {
+    let mut v = vec![1, 2, 3];
+
+    for i in &v {
+        println!("{}", i);
+    }
+} // this works as it only prints values from `v`
+///
+fn main() {
+    let mut v = vec![1, 2, 3];
+
+    for i in &v {
+        println!("{}", i);
+        v.push(34);
+    }
+} // this fails
+/// The actual error the last function returns is the same as listed above:
+///     error: cannot borrow `v` as mutable because it is also 
+///     borrowed as immutable
+///         v.push(34);
+///         ^
+/// Since v is being borrowed by the loop we can't modify it.
+///
+/// ### use after free
+/// Rust checks the scope of a resource, killing the reference accordingly
+fn main() {
+    let y: &i32;
+    {
+        let x = 5;
+        y = &x;
+    }
+    println!("{}", y);
+}
+/// This returns:
+///     error: `x` does not live long enough
+///         y = &x;
+///              ^
+/// because `y` is dependent on `x`, which only exists in the scope 
+/// of the brackets
+///
+/// This is the same issue as when a reference is declared before 
+/// it's reference
+fn main() {
+    let y: i32;
+    let x = 5;
+    y = &x;
+
+    println!("{}", y);
+}
+/// This returns:
+///     error: x does not live long enough
+///     y = &x
+///          ^
+/// This is only because `y` is declared before `x` and, therefore, lives
+/// longer than `x`, which invalidates the reference.
