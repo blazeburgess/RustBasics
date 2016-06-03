@@ -91,3 +91,18 @@ a.x = 10;
 let b = Point { x: 5, y: 6 };
 
 b.x = 10 // returns "error: cannot assign to immutable field `b.x`
+
+/// Using `Cell<T>` allows emulation of field level mutability, so the
+/// following will successfully update
+use std::cell::Cell;
+
+struct Point {
+    x: i32,
+    y: Cell<i32>,
+}
+
+let point = Point { x: 5, y: Cell::new(6) };
+
+point.y.set(7);
+
+println!("Y: {:?}", point.y); // prints `y: Cell { value: 7 }`
